@@ -1,6 +1,5 @@
 import { InMemoryUsersRepository } from "../../../users/repositories/in-memory/InMemoryUsersRepository";
 import { CreateUserUseCase } from "../../../users/useCases/createUser/CreateUserUseCase";
-import { ICreateUserDTO } from "../../../users/useCases/createUser/ICreateUserDTO";
 import { OperationType } from "../../entities/Statement";
 import { InMemoryStatementsRepository } from "../../repositories/in-memory/InMemoryStatementsRepository";
 import { CreateStatementUseCase } from "../createStatement/CreateStatementUseCase";
@@ -29,52 +28,50 @@ describe("Create Statement", () => {
   });
 
   it("Should be able to return user's balance", async () => {
-    const user: ICreateUserDTO = {
+    const user = await createUserUseCase.execute({
       name: "test",
       email: "test@example.com",
       password: "123",
-    };
-
-    const createdUser = await createUserUseCase.execute(user);
-
-    // const createdStatement = await createStatementUseCase.execute({
-    //   amount: 3530,
-    //   description: "Test statement",
-    //   type: OperationType.DEPOSIT,
-    //   user_id: createdUser.id!,
-    // });
-
-    let balance = await getBalanceUseCase.execute({
-      user_id: createdUser.id!,
     });
-
-    expect(balance.balance).toBe(0);
 
     await createStatementUseCase.execute({
       amount: 3530,
       description: "Test statement",
       type: OperationType.DEPOSIT,
-      user_id: createdUser.id!,
+      user_id: user.id!,
     });
-
-    balance = await getBalanceUseCase.execute({
-      user_id: createdUser.id!,
-    });
-
-    expect(balance.balance).toBe(3530);
 
     await createStatementUseCase.execute({
       amount: 2000,
       description: "Test statement",
       type: OperationType.WITHDRAW,
-      user_id: createdUser.id!,
+      user_id: user.id!,
     });
 
-    balance = await getBalanceUseCase.execute({
-      user_id: createdUser.id!,
+    const receiver = await createUserUseCase.execute({
+      name: "receiver",
+      email: "test2@example.com",
+      password: "123",
     });
 
-    expect(balance.balance).toBe(1530);
+    await createStatementUseCase.execute({
+      amount: 700,
+      description: "Test statement",
+      type: OperationType.TRANSFER,
+      user_id: user.id!,
+      receiver_id: receiver.id!,
+    });
+
+    const senderBalance = await getBalanceUseCase.execute({
+      user_id: user.id!,
+    });
+
+    const receiverBalance = await getBalanceUseCase.execute({
+      user_id: receiver.id!,
+    });
+
+    expect(senderBalance.balance).toBe(3530 - 2000 - 700);
+    expect(receiverBalance.balance).toBe(700);
   });
 
   it("Should not be able to return a non-existing user's balance", () => {
