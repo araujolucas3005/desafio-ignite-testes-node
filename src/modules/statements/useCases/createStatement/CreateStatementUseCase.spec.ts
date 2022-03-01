@@ -52,7 +52,7 @@ describe("Create Statement", () => {
     }).rejects.toBeInstanceOf(CreateStatementError.UserNotFound);
   });
 
-  it("Should not be to withdraw a value higher than the user's balance", async () => {
+  it("Should not be able to withdraw a value higher than the user's balance", async () => {
     const user: ICreateUserDTO = {
       name: "test",
       email: "test@example.com",

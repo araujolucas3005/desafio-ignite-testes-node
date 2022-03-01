@@ -32,6 +32,7 @@ describe("Authenticate User", () => {
     });
 
     expect(result).toHaveProperty("token");
+    expect(result).toHaveProperty("user");
   });
 
   it("Should not be able to authenticate a non-existing user", () => {
