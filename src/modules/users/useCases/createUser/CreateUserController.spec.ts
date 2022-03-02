@@ -14,6 +14,10 @@ describe("Create User Controller", () => {
     await connection.dropDatabase();
     await connection.close();
   });
+  
+  afterEach(async () => {
+    await connection.query("DELETE FROM users");
+  });
 
   it("Should be able to create a new user", async () => {
     const response = await request(app).post("/api/v1/users").send({
